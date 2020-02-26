@@ -156,6 +156,8 @@ train_data = pd.read_csv(os.path.join(data_path, 'train_data.csv'), header = 0)
 
 target = train_data.type
 train_data.drop(['type'],axis=1,inplace=True)
+# TODO
+# 需要设置 test_data
 ##########
 
 ##########
