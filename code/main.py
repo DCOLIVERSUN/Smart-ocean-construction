@@ -149,14 +149,13 @@ test_data.columns = ['ship',
                      'd_mean', 'static_ratio', 'medium_v_ratio']
 ##########
 
-##########
 # ##########
 # 分离特征与标签
 
 target = train_data.type
 train_data.drop(['type'],axis=1,inplace=True)
-# TODO
-# 需要设置 test_data
+res = test_data[['ship', 'a']]
+test_data.drop(['ship'],axis=1,inplace=True)
 ##########
 
 ##########
