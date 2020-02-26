@@ -176,7 +176,7 @@ result = []
 scores = []
 models = []
 ## 未标明随机数，如遇问题可电联 18500242957
-fold = StratifiedKFold(n_splits = 20, shuffle = True, random_state = 0)
+fold = StratifiedKFold(n_splits = 20, shuffle = True, random_state = 380)
 for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
     x_train = train_data.iloc[train_idx]
     y_train = target.iloc[train_idx]
