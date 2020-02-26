@@ -6,6 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score
+import xgboost as xgb
 
 ###########
 # 预处理函数
