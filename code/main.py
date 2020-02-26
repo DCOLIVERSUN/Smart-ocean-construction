@@ -107,26 +107,24 @@ def feature_engineer(df, flag=True):
 ##########
 # 处理训练集
             
-#features = []
-## TODO
-## 提交前修改为 tcdata
-#train_path = r'../data/hy_round2_train_20200225'
-#data_path = r'../data'
-#train_files = os.listdir(train_path)
-#train_files_len = len(train_files)
-#
-#for file in tqdm(train_files):
-#    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
-#    feature_engineer(df, flag=True)
-#
-#train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
-#train_data.columns = ['x_min','x_max','x_mean','x_1/4',
-#                     'y_min','y_max','y_mean','y_3/4',
-#                     'xy_cov',
-#                     'a',
-#                     'v_mean','v_std','v_3/4',
-#                     'd_mean', 'static_ratio', 'medium_v_ratio',
-#                     'type']
+features = []
+train_path = r'./tcdata/hy_round2_train_20200225'
+train_files = os.listdir(train_path)
+train_files_len = len(train_files)
+print("The len of train is " + str(train_files_len))
+
+for file in tqdm(train_files):
+    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
+    feature_engineer(df, flag=True)
+
+train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
+train_data.columns = ['x_min','x_max','x_mean','x_1/4',
+                     'y_min','y_max','y_mean','y_3/4',
+                     'xy_cov',
+                     'a',
+                     'v_mean','v_std','v_3/4',
+                     'd_mean', 'static_ratio', 'medium_v_ratio',
+                     'type']
 ##########
 
 ##########
