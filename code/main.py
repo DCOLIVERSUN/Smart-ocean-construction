@@ -100,10 +100,10 @@ def feature_engineer(df, flag=True):
             features.append(2)
 ##########
 
-# TODO
-# 先用处理好的数据
-data_path = r'../data'
-train_data = pd.read_csv(os.path.join(data_path, 'train_data.csv'), header = 0)
+## TODO
+## 先用处理好的数据
+#data_path = r'../data'
+#train_data = pd.read_csv(os.path.join(data_path, 'train_data.csv'), header = 0)
 ##########
 # 处理训练集
             
