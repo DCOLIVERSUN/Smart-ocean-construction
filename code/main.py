@@ -193,15 +193,15 @@ print('XGB mean F1 Score: ' + str(np.mean(scores)))
 ##########
 # 保存结果
 
-#submit_path = r'../submit'
-#res = []
-#for i in range(2000):
-#    tmp = np.bincount(np.array(result,dtype='int')[:,i])
-#    res.append(np.argmax(tmp))
-#
-#ans = pd.DataFrame(np.arange(9000,11000,1))
-#ans['type'] = pd.Series(res).map({0:'围网', 1:'刺网', 2:'拖网'})
-#ans.to_csv(os.path.join(submit_path, 'submit_'+datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+'.csv'), index = None, header = None, encoding = 'utf-8')
-#
-#print(ans['type'].value_counts()/2000)
+submit_path = r'./'
+res = []
+for i in range(test_files_len):
+    tmp = np.bincount(np.array(result,dtype='int')[:,i])
+    res.append(np.argmax(tmp))
+
+res['type'] = pd.Series(res).map({0:'围网', 1:'刺网', 2:'拖网'})
+res.drop(['a'], axis=1, inplace=True)
+res.to_csv(os.path.join(submit_path, 'result.csv'), index = None, header = None, encoding = 'utf-8')
+
+print(res['type'].value_counts()/test_files_len)
 ##########
