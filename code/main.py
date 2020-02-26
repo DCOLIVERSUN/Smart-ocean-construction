@@ -137,7 +137,7 @@ test_files_len = len(test_files)
 print("The len of test is " + str(test_files_len))
 
 for file in tqdm(test_files):
-    df = pd.read_csv(os.path.join(test_files, file), header=0, keep_default_na=False)
+    df = pd.read_csv(os.path.join(test_path, file), header=0, keep_default_na=False)
     feature_engineer(df, flag=False)
 test_data = pd.DataFrame(np.array(features).reshape(test_files_len, int(len(features) / test_files_len)))
 test_data.columns = ['ship',
