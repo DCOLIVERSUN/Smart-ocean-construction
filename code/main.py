@@ -181,12 +181,11 @@ for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
     model.fit(x_train, y_train)
     pred = model.predict(x_test)
     score = f1_score(y_test, pred, average='macro')
-    models.append(model)
     scores.append(score)
     print(index, 'F1 Score: ', score)
     
-#    prediction = model.predict_proba(test_data)
-#    result.append(np.argmax(prediction, axis=1))
+    prediction = model.predict_proba(test_data)
+    result.append(np.argmax(prediction, axis=1))
     
 print('XGB mean F1 Score: ' + str(np.mean(scores)))
 ##########
