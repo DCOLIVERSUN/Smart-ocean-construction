@@ -159,8 +159,7 @@ test_data.drop(['ship'],axis=1,inplace=True)
 ##########
 
 ##########
-# 配置 XGBClassifier 参数并训练
-## 未标明随机数，如遇问题可电联 18500242957
+# 配置 XGBClassifier 参数
 
 model = xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 6, 
                           reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover',
@@ -172,8 +171,6 @@ model = xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 
 
 result = []
 scores = []
-models = []
-## 未标明随机数，如遇问题可电联 18500242957
 fold = StratifiedKFold(n_splits = 20, shuffle = True, random_state = 380)
 for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
     x_train = train_data.iloc[train_idx]
