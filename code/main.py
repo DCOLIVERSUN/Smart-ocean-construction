@@ -149,3 +149,63 @@ train_data = pd.read_csv(os.path.join(data_path, 'train_data.csv'), header = 0)
 #                     'v_mean','v_std','v_3/4',
 #                     'd_mean', 'static_ratio', 'medium_v_ratio']
 ##########
+
+##########
+# ##########
+# 分离特征与标签
+
+target = train_data.type
+train_data.drop(['type'],axis=1,inplace=True)
+##########
+
+##########
+# 配置 XGBClassifier 参数并训练
+## 未标明随机数，如遇问题可电联 18500242957
+
+model = xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 6, 
+                          reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover',
+                          n_jobs = -1, random_state = 0)
+##########
+
+##########
+# 20折交叉验证
+
+result = []
+scores = []
+models = []
+## 未标明随机数，如遇问题可电联 18500242957
+fold = StratifiedKFold(n_splits = 20, shuffle = True, random_state = 0)
+for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
+    x_train = train_data.iloc[train_idx]
+    y_train = target.iloc[train_idx]
+    x_test = train_data.iloc[test_idx]
+    y_test = target.iloc[test_idx]
+    
+    model.fit(x_train, y_train)
+    pred = model.predict(x_test)
+    score = f1_score(y_test, pred, average='macro')
+    models.append(model)
+    scores.append(score)
+    print(index, 'F1 Score: ', score)
+    
+#    prediction = model.predict_proba(test_data)
+#    result.append(np.argmax(prediction, axis=1))
+    
+print('XGB mean F1 Score: ' + str(np.mean(scores)))
+##########
+
+##########
+# 保存结果
+
+#submit_path = r'../submit'
+#res = []
+#for i in range(2000):
+#    tmp = np.bincount(np.array(result,dtype='int')[:,i])
+#    res.append(np.argmax(tmp))
+#
+#ans = pd.DataFrame(np.arange(9000,11000,1))
+#ans['type'] = pd.Series(res).map({0:'围网', 1:'刺网', 2:'拖网'})
+#ans.to_csv(os.path.join(submit_path, 'submit_'+datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+'.csv'), index = None, header = None, encoding = 'utf-8')
+#
+#print(ans['type'].value_counts()/2000)
+##########
