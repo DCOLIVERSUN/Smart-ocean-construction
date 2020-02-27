@@ -60,6 +60,8 @@ def feature_engineer(df, flag=True):
     features.append(df['lat'].max())              #x_max
     features.append(df['lat'].mean())             #x_mean
     features.append(df['lat'].quantile(0.25))     #x_1/4
+    features.append(df['lat'].quantile(0.5))      #x_1/2
+    features.append(df)
     
     features.append(df['lon'].min())              #y_min
     features.append(df['lon'].max())              #y_max
