@@ -17,6 +17,7 @@ def preprocess(df):
     df['minute'] = df['time'].dt.minute
     df = del_dup(df)
     df = del_v(df)
+    df = del_lon(df)
     del df['minute']
     return df
 
