@@ -171,13 +171,13 @@ for file in tqdm(test_files):
     feature_engineer(df, flag=False)
 test_data = pd.DataFrame(np.array(features).reshape(test_files_len, int(len(features) / test_files_len)))
 test_data.columns = ['ship',
-                     'x_min','x_max','x_mean','x_1/4', 'x_1/2', 'x_3/4',
+                     'x_min','x_max','x_mean','x_1/4', 'x_1/2', 
                      'y_min','y_max','y_mean','y_3/4',
                      'xy_cov',
                      'a',
                      'v_mean','v_std','v_3/4',
                      'd_mean', 'static_ratio', 'medium_v_ratio',
-                     'low_lon_ratio', 'medium_lon_ratio']#, 'high_lon_ratio']
+                     'low_lon_ratio', 'medium_lon_ratio']
 ##########
 
 # ##########
