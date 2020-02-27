@@ -126,7 +126,9 @@ def feature_engineer(df, flag=True):
 # 处理训练集
             
 features = []
-train_path = r'./tcdata/hy_round2_train_20200225'
+# TODO: 训练路径名后续需要改回
+#train_path = r'./tcdata/hy_round2_train_20200225'
+train_path = r'../data/hy_round2_train_20200225'
 train_files = os.listdir(train_path)
 train_files_len = len(train_files)
 print("The len of train is " + str(train_files_len))
