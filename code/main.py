@@ -7,6 +7,9 @@ from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score
 import xgboost as xgb
+import warnings
+
+warnings.filterwarnings('ignore')
 
 ###########
 # 预处理函数
