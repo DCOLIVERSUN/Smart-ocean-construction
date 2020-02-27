@@ -147,7 +147,7 @@ train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 'x_3/4',
                      'low_lon_ratio', 'medium_lon_ratio', 'high_lon_ratio',
                      'type']
 # TODO：提交前删掉
-train_data.to_csv('trian_data.csv', index = None)
+train_data.to_csv('trian_data_0227_21.csv', index = None)
 ##########
 
 ##########
