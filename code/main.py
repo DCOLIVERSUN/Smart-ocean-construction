@@ -45,6 +45,18 @@ def del_v(df):
         elif 6 < df['速度'].iloc[i]:
             df['v_stage'].iloc[i] = 3
     return df
+
+# 处理经度
+def del_lon(df):
+    df['lon_stage'] = 0
+    for i in range(len(df)):
+        if 116 <= df['lon'].iloc[i] < 119:
+            df['lon_stage'].iloc[i] = 1
+        elif 119 <= df['lon'].iloc[i] < 122:
+            df['lon_stage'].iloc[i] = 2
+        elif 122 <= df['lon'].iloc[i]:
+            df['lon_stage'].iloc[i] = 3
+    return df
 ###########
     
 ###########
