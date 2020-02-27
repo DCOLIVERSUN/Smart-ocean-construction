@@ -154,7 +154,9 @@ train_data.to_csv('trian_data.csv', index = None)
 # 处理测试集
 
 features = []
-test_path = r'./tcdata/hy_round2_testA_20200225'
+# TODO: 测试路径名后续需要改回
+#test_path = r'./tcdata/hy_round2_testA_20200225'
+test_path = r'../data/hy_round2_testA_20200225'
 test_files = os.listdir(test_path)
 test_files_len = len(test_files)
 print("The len of test is " + str(test_files_len))
