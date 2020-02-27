@@ -138,13 +138,16 @@ for file in tqdm(train_files):
     feature_engineer(df, flag=True)
 
 train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
-train_data.columns = ['x_min','x_max','x_mean','x_1/4',
+train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 'x_3/4',
                      'y_min','y_max','y_mean','y_3/4',
                      'xy_cov',
                      'a',
                      'v_mean','v_std','v_3/4',
                      'd_mean', 'static_ratio', 'medium_v_ratio',
+                     'low_lon_ratio', 'medium_lon_ratio', 'high_lon_ratio',
                      'type']
+# TODO：提交前删掉
+train_data.to_csv('trian_data.csv', index = None)
 ##########
 
 ##########
