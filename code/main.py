@@ -61,6 +61,16 @@ def del_lon(df):
         elif 122 <= df['lon'].iloc[i]:
             df['lon_stage'].iloc[i] = 3
     return df
+
+# 处理纬度
+def del_lat(df):
+    df['lat_stage'] = 0
+    for i in range(len(df)):
+        if 22 <= df['lat'].iloc[i] <= 24:
+            df['lat_stage'].iloc[i] = 1
+        elif 26 <= df['lat'].iloc[i] <= 28:
+            df['lat_stage'].iloc[i] = 2
+    return df
 ###########
     
 ###########
