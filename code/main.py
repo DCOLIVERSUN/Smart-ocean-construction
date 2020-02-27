@@ -177,7 +177,7 @@ test_data.columns = ['ship',
                      'a',
                      'v_mean','v_std','v_3/4',
                      'd_mean', 'static_ratio', 'medium_v_ratio',
-                     'low_lon_ratio', 'medium_lon_ratio', 'high_lon_ratio']
+                     'low_lon_ratio', 'medium_lon_ratio']#, 'high_lon_ratio']
 ##########
 
 # ##########
