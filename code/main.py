@@ -194,14 +194,21 @@ for file in tqdm(test_files):
 test_data = pd.DataFrame(np.array(features).reshape(test_files_len, int(len(features) / test_files_len)))
 test_data.columns = ['ship',
                      'x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-                     'y_min','y_max','y_mean','y_3/4',
+                     'y_min','y_max','y_mean','y_3/4', 'y_1/2',
                      'xy_cov',
                      'a',
-                     'v_mean','v_std', 'v_3/4',
-                     'd_mean', 'static_ratio', 'medium_v_ratio',
-                     'low_lon_ratio', 'medium_lon_ratio', 'low_lat_ratio', 'medium_lat_ratio']
+                     'v_mean', 'v_std', 'v_3/4',
+#                     'd_mean', 'd_std', 
+#                     'd_1/2', 
+                     'd_3/4',
+                     'static_ratio', 'medium_v_ratio',
+                     'low_lon_ratio', 'medium_lon_ratio']#,
+                     #'low_lat_ratio','medium_lat_ratio', 'high_lat_ratio']
 ##########
-
+del features
+del test_files
+del test_path
+del df
 # ##########
 # 分离特征与标签
 
