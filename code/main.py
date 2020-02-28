@@ -114,10 +114,7 @@ def feature_engineer(df, flag=True):
     features.append(df['速度'].std())            #v_std
     features.append(df['速度'].quantile(0.75))   #v_3/4
          
-#    features.append(df['方向'].mean())           #d_mean
-#    features.append(df['方向'].std())            #d_std
-#    features.append(df['方向'].quantile(0.5))    #d_1/2
-    features.append(df['方向'].quantile(0.75))   #d_3/4
+    features.append(df['方向'].quantile(0.75))           #d_mean
 
     features.append(len(df[df['v_stage'] == 0]) / len(df)) # 静止率
     if len(df[df['v_stage'] != 0]) == 0:
