@@ -139,37 +139,37 @@ def feature_engineer(df, flag=True):
 # TODO
 # 先用处理好的数据
 #data_path = r'./'
-train_data = pd.read_csv('trian_data_0227_26.csv', header = 0)
-train_data.drop(['v_mean','d_mean','d_1/2','d_std','high_lat_ratio','medium_lat_ratio','low_lat_ratio'], axis=1,inplace=True)
+#train_data = pd.read_csv('trian_data_0228_26.csv', header = 0)
+#train_data.drop(['y_1/2','d_mean','d_1/2','d_std','medium_lat_ratio','low_lat_ratio'], axis=1,inplace=True)
 ##########
 # 处理训练集
             
 features = []
 # TODO: 训练路径名后续需要改回
-#train_path = r'./tcdata/hy_round2_train_20200225'
-train_path = r'../data/hy_round2_train_20200225'
+train_path = r'./tcdata/hy_round2_train_20200225'
+#train_path = r'../data/hy_round2_train_20200225'
 # TODO: 后续需要取消注释
-#train_files = os.listdir(train_path)
-#train_files_len = len(train_files)
-#print("The len of train is " + str(train_files_len))
-#
-#for file in tqdm(train_files):
-#    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
-#    feature_engineer(df, flag=True)
-#
-#train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
-#train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-#                     'y_min','y_max','y_mean','y_3/4', 'y_1/2',
-#                     'xy_cov',
-#                     'a',
-#                     'v_mean','v_std','v_3/4',
-#                     'd_mean', 'd_std', 'd_1/2', 'd_3/4',
-#                     'static_ratio', 'medium_v_ratio',
-#                     'low_lon_ratio', 'medium_lon_ratio', 
-#                     'low_lat_ratio', 'medium_lat_ratio', 'high_lat_ratio',
-#                     'type']
+train_files = os.listdir(train_path)
+train_files_len = len(train_files)
+print("The len of train is " + str(train_files_len))
+
+for file in tqdm(train_files):
+    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
+    feature_engineer(df, flag=True)
+
+train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
+train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
+                     'y_min','y_max','y_mean','y_3/4', 'y_1/2',
+                     'xy_cov',
+                     'a',
+                     'v_mean','v_std','v_3/4',
+                     'd_3/4',
+                     'static_ratio', 'medium_v_ratio',
+                     'low_lon_ratio', 'medium_lon_ratio', 
+                     'high_lat_ratio',
+                     'type']
 ## TODO：提交前删掉
-#train_data.to_csv('trian_data_0227_26.csv', index = None)
+#train_data.to_csv('trian_data_0228_26.csv', index = None)
 ##########
 
 ##########
@@ -177,8 +177,8 @@ train_path = r'../data/hy_round2_train_20200225'
 
 features = []
 # TODO: 测试路径名后续需要改回
-#test_path = r'./tcdata/hy_round2_testA_20200225'
-test_path = r'../data/hy_round2_testA_20200225'
+test_path = r'./tcdata/hy_round2_testA_20200225'
+#test_path = r'../data/hy_round2_testA_20200225'
 test_files = os.listdir(test_path)
 test_files_len = len(test_files)
 print("The len of test is " + str(test_files_len))
