@@ -193,17 +193,12 @@ test_data.columns = ['ship',
                      'xy_cov',
                      'a',
                      'v_mean', 'v_std', 'v_3/4',
-#                     'd_mean', 'd_std', 
-#                     'd_1/2', 
                      'd_3/4',
                      'static_ratio', 'medium_v_ratio',
-                     'low_lon_ratio', 'medium_lon_ratio']#,
-                     #'low_lat_ratio','medium_lat_ratio', 'high_lat_ratio']
+                     'low_lon_ratio', 'medium_lon_ratio',
+                     'high_lat_ratio']
 ##########
-del features
-del test_files
-del test_path
-del df
+
 # ##########
 # 分离特征与标签
 
@@ -262,4 +257,3 @@ res.to_csv(os.path.join(submit_path, 'result.csv'), index = None, header = None,
 
 print(res['type'].value_counts()/test_files_len)
 ##########
-del test_files_len
