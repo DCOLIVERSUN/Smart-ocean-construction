@@ -267,3 +267,4 @@ res.to_csv(os.path.join(submit_path, 'result.csv'), index = None, header = None,
 
 print(res['type'].value_counts()/test_files_len)
 ##########
+del test_files_len
