@@ -140,8 +140,8 @@ def feature_engineer(df, flag=True):
 # TODO
 # 先用处理好的数据
 #data_path = r'./'
-#train_data = pd.read_csv('trian_data_0228_26.csv', header = 0)
-#train_data.drop(['y_1/2','d_mean','d_1/2','d_std','medium_lat_ratio','low_lat_ratio'], axis=1,inplace=True)
+#train_data = pd.read_csv('trian_data_0229_21.csv', header = 0)
+#train_data.drop(['y_max_y_min'], axis=1,inplace=True)
 ##########
 # 处理训练集
             
@@ -149,7 +149,7 @@ features = []
 # TODO: 训练路径名后续需要改回
 train_path = r'./tcdata/hy_round2_train_20200225'
 #train_path = r'../data/hy_round2_train_20200225'
-# TODO: 后续需要取消注释
+## TODO: 后续需要取消注释
 train_files = os.listdir(train_path)
 train_files_len = len(train_files)
 print("The len of train is " + str(train_files_len))
@@ -169,8 +169,8 @@ train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2',
                      'low_lon_ratio', 'medium_lon_ratio', 
                      'high_lat_ratio',
                      'type']
-## TODO：提交前删掉
-#train_data.to_csv('trian_data_0228_26.csv', index = None)
+### TODO：提交前删掉
+#train_data.to_csv('trian_data_0229_21.csv', index = None)
 ##########
 
 ##########
