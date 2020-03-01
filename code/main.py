@@ -21,7 +21,7 @@ def preprocess(df):
     df = del_dup(df)
     df = del_v(df)
     df = del_lon(df)
-    df = del_lat(df)
+#    df = del_lat(df)
     del df['minute']
     return df
 
