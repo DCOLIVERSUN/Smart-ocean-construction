@@ -125,7 +125,8 @@ def feature_engineer(df, flag=True):
     features.append(len(df[df['lon_stage'] == 1]) / len(df)) # 低经度
     features.append(len(df[df['lon_stage'] == 2]) / len(df)) # 中经度
     
-    features.append(len(df[df['lat_stage'] == 3]) / len(df)) # 高纬度
+    features.append(df['lat'].max() - df['lat'].min())  #x_max_x_min
+
     
     if(flag):
         if df['type'].iloc[0] == '围网':
