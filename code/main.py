@@ -96,7 +96,7 @@ def feature_engineer(df, flag=True):
     features.append(df['lon'].max())              #y_max
     features.append(df['lon'].mean())             #y_mean
     features.append(df['lon'].quantile(0.75))     #y_3/4
-    features.append(df['lon'].quantile(0.5))      #y_1/2
+#    features.append(df['lon'].quantile(0.5))      #y_1/2
     
     features.append(df['lat'].cov(df['lon']))       #xy_cov
     
