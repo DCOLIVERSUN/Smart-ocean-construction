@@ -75,7 +75,7 @@ def feature_engineer(df, flag=True):
     features.append(df['lat'].mean())             #x_mean
     features.append(df['lat'].quantile(0.25))     #x_1/4
     features.append(df['lat'].quantile(0.5))      #x_1/2
-#    features.append(df['lat'].quantile(0.75))     #x_3/4
+
     
     features.append(df['lon'].min())              #y_min
     features.append(df['lon'].max())              #y_max
@@ -108,7 +108,8 @@ def feature_engineer(df, flag=True):
     
     features.append(len(df[df['lon_stage'] == 1]) / len(df)) # 低经度
     features.append(len(df[df['lon_stage'] == 2]) / len(df)) # 中经度
-#    features.append(len(df[df['lon_stage'] == 3]) / len(df)) # 高经度
+
+    features.append(df['lat'].max() - df['lat'].min()) # x_max_x_min
     
     if(flag):
         if df['type'].iloc[0] == '围网':
@@ -117,13 +118,6 @@ def feature_engineer(df, flag=True):
             features.append(1)
         elif df['type'].iloc[0] == '拖网':
             features.append(2)
-##########
-
-# TODO
-# 先用处理好的数据
-#data_path = r'./'
-#train_data = pd.read_csv('trian_data_0227_21.csv', header = 0)
-#train_data.drop(['x_3/4','high_lon_ratio'], axis=1,inplace=True)
 ##########
 # 处理训练集
             
@@ -142,15 +136,17 @@ for file in tqdm(train_files):
 
 train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
 train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-                     'y_min','y_max','y_mean','y_3/4',
+                     'y_min','y_max','y_mean','y_3/4', 
                      'xy_cov',
                      'a',
                      'v_mean','v_std','v_3/4',
-                     'd_mean', 'static_ratio', 'medium_v_ratio',
+                     'd_mean',
+                     'static_ratio', 'medium_v_ratio',
                      'low_lon_ratio', 'medium_lon_ratio', 
+                     'x_max_x_min',
                      'type']
-## TODO：提交前删掉
-#train_data.to_csv('trian_data_0227_21.csv', index = None)
+#
+train_data.to_csv('train_data.csv', index = None)
 ##########
 
 ##########
@@ -170,10 +166,14 @@ for file in tqdm(test_files):
 test_data = pd.DataFrame(np.array(features).reshape(test_files_len, int(len(features) / test_files_len)))
 test_data.columns = ['ship',
                      'x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-                     'y_min','y_max','y_mean','y_3/4',
+                     'y_min','y_max','y_mean','y_3/4', 
                      'xy_cov',
                      'a',
                      'v_mean','v_std','v_3/4',
-                     'd_mean', 'static_ratio', 'medium_v_ratio',
-                     'low_lon_ratio', 'medium_lon_ratio']
+                     'd_mean',
+                     'static_ratio', 'medium_v_ratio',
+                     'low_lon_ratio', 'medium_lon_ratio', 
+                     'x_max_x_min']
+
+test_data.to_csv('test_data.csv', index = None)
 ##########
