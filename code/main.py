@@ -96,7 +96,6 @@ def feature_engineer(df, flag=True):
     features.append(df['lon'].max())              #y_max
     features.append(df['lon'].mean())             #y_mean
     features.append(df['lon'].quantile(0.75))     #y_3/4
-#    features.append(df['lon'].quantile(0.5))      #y_1/2
     
     features.append(df['lat'].cov(df['lon']))       #xy_cov
     
@@ -121,11 +120,52 @@ def feature_engineer(df, flag=True):
         features.append(0)          # 中速率
     else:
         features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] != 0])) # 中速率
+#    features.append(len(df[df['v_stage'] == 2]))  # 中速
+#    features.append(len(df[df['v_stage'] == 2]) / len(df))
+#    if len(df[df['v_stage'] == 0]) == 0:
+#        features.append(0)
+#    else:
+#        features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] == 0]))
+    if len(df[df['v_stage'] == 1]) == 0:
+        features.append(0)
+    else:
+        features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] == 1]))
+    if len(df[df['v_stage'] == 3]) == 0:
+        features.append(0)
+    else:
+        features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] == 3]))
     
     features.append(len(df[df['lon_stage'] == 1]) / len(df)) # 低经度
     features.append(len(df[df['lon_stage'] == 2]) / len(df)) # 中经度
     
-    features.append(df['lat'].max() - df['lat'].min())  #x_max_x_min
+    features.append(abs(sum(t_diff)) / 60)      # last_time
+#    features.append(df['x_x_mean'].max())       # x_x_mean_max
+#    features.append(df['x_x_mean'].min())
+#    features.append(df['x_x_mean'].mean())
+#    features.append(df['x_x_mean'].quantile(0.25))
+#    features.append(df['x_x_mean'].quantile(0.5))
+#    features.append(df['x_x_mean'].quantile(0.75))
+    
+    features.append(df['y_y_mean'].max())
+#    features.append(df['y_y_mean'].min())
+#    features.append(df['y_y_mean'].mean())
+#    features.append(df['y_y_mean'].quantile(0.25))
+#    features.append(df['y_y_mean'].quantile(0.5))
+#    features.append(df['y_y_mean'].quantile(0.75))
+    
+    features.append(df['distance'].max())
+#    features.append(df['distance'].min())
+#    features.append(df['distance'].mean())
+#    features.append(df['distance'].quantile(0.25))
+#    features.append(df['distance'].quantile(0.5))
+#    features.append(df['distance'].quantile(0.75))
+    
+#    if len(df[df['v_stage'] != 0]) == 0:
+#        features.append(0)          # 
+#    else:
+#        cnt = moving_straight(df)
+#        features.append(cnt / len(df[df['v_stage'] != 0])) # 直行率
+    
 
     
     if(flag):
@@ -140,46 +180,53 @@ def feature_engineer(df, flag=True):
 # TODO
 # 先用处理好的数据
 #data_path = r'./'
-#train_data = pd.read_csv('trian_data_0229_21.csv', header = 0)
-#train_data.drop(['y_max_y_min'], axis=1,inplace=True)
+train_data = pd.read_csv('trian_data_0302_1.csv', header = 0)
+train_data.drop(['medium_v_num', 'medium_v_total_ratio', 'medium_static_ratio'], axis=1,inplace=True)
 ##########
 # 处理训练集
             
 features = []
 # TODO: 训练路径名后续需要改回
-train_path = r'./tcdata/hy_round2_train_20200225'
-#train_path = r'../data/hy_round2_train_20200225'
+#train_path = r'./tcdata/hy_round2_train_20200225'
+train_path = r'../data/hy_round2_train_20200225'
 ## TODO: 后续需要取消注释
-train_files = os.listdir(train_path)
-train_files_len = len(train_files)
-print("The len of train is " + str(train_files_len))
-
-for file in tqdm(train_files):
-    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
-    feature_engineer(df, flag=True)
-
-train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
-train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-                     'y_min','y_max','y_mean','y_3/4', 
-                     'xy_cov',
-                     'a',
-                     'v_mean','v_std','v_3/4',
-                     'd_mean',
-                     'static_ratio', 'medium_v_ratio',
-                     'low_lon_ratio', 'medium_lon_ratio', 
-                     'x_max_x_min',
-                     'type']
-### TODO：提交前删掉
-#train_data.to_csv('trian_data_0229_21.csv', index = None)
+#train_files = os.listdir(train_path)
+#train_files_len = len(train_files)
+#print("The len of train is " + str(train_files_len))
+#
+#for file in tqdm(train_files):
+#    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
+#    feature_engineer(df, flag=True)
+#
+#train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
+#train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
+#                     'y_min','y_max','y_mean','y_3/4', 
+#                     'xy_cov',
+#                     'a',
+#                     'v_mean','v_std','v_3/4',
+#                     'd_mean',
+#                     'static_ratio', 'medium_v_ratio', 'medium_v_num', 'medium_v_total_ratio', 'medium_static_ratio', 'medium_low_ratio', 'medium_high_ratio',
+#                     'low_lon_ratio', 'medium_lon_ratio', 
+#                     'last_time',
+#                     #'x_x_mean_max', #'x_x_mean_min', 'x_x_mean_mean', 'x_x_mean_1/4', 'x_x_mean_1/2', 'x_x_mean_3/4',
+#                     'y_y_mean_max', #'y_y_mean_min', #'y_y_mean_mean', 
+#                     #'y_y_mean_1/4', #'y_y_mean_1/2', 
+#                     #'y_y_mean_3/4',
+#                     'distance_max', 
+#                     #'distance_min', 'distance_mean', #'distance_1/4', 'distance_1/2', 
+#                     #'distance_3/4',
+#                     #'straight_ratio',
+#                     'type']
+## TODO：提交前删掉
+#train_data.to_csv('trian_data_0302_1.csv', index = None)
 ##########
 
 ##########
 # 处理测试集
-
 features = []
 # TODO: 测试路径名后续需要改回
-test_path = r'./tcdata/hy_round2_testA_20200225'
-#test_path = r'../data/hy_round2_testA_20200225'
+#test_path = r'./tcdata/hy_round2_testA_20200225'
+test_path = r'../data/hy_round2_testA_20200225'
 test_files = os.listdir(test_path)
 test_files_len = len(test_files)
 print("The len of test is " + str(test_files_len))
@@ -195,9 +242,18 @@ test_data.columns = ['ship',
                      'a',
                      'v_mean','v_std','v_3/4',
                      'd_mean',
-                     'static_ratio', 'medium_v_ratio',
+                     'static_ratio', 'medium_v_ratio', #'medium_v_num', 'medium_v_total_ratio', 'medium_static_ratio', 
+                     'medium_low_ratio', 'medium_high_ratio',
                      'low_lon_ratio', 'medium_lon_ratio', 
-                     'x_max_x_min'
+                     'last_time',
+                     #'x_x_mean_max', #'x_x_mean_min', 'x_x_mean_mean', 'x_x_mean_1/4', 'x_x_mean_1/2', 'x_x_mean_3/4',
+                     'y_y_mean_max', #'y_y_mean_min', #'y_y_mean_mean', 
+                     #'y_y_mean_1/4', #'y_y_mean_1/2', 
+                     #'y_y_mean_3/4',
+                     'distance_max', 
+                     #'distance_min', 'distance_mean', #'distance_1/4', 'distance_1/2', 
+                     #'distance_3/4',
+                     #'straight_ratio',
                      ]
 ##########
 
@@ -215,7 +271,7 @@ test_data.drop(['ship'],axis=1,inplace=True)
 
 model = xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 6, 
                           reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover',
-                          n_jobs = -1, random_state = 0)
+                          n_jobs = -1, seed = 10000)
 ##########
 
 ##########
@@ -223,7 +279,7 @@ model = xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 
 
 result = []
 scores = []
-fold = StratifiedKFold(n_splits = 20, shuffle = True, random_state = 380)
+fold = StratifiedKFold(n_splits = 20, shuffle = True)#, random_state = 380)
 for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
     x_train = train_data.iloc[train_idx]
     y_train = target.iloc[train_idx]
