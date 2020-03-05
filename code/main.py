@@ -149,8 +149,8 @@ def feature_engineer(df, flag=True):
 # TODO
 # 先用处理好的数据
 #data_path = r'./'
-train_data = pd.read_csv('trian_data_0302_1.csv', header = 0)
-train_data.drop(['medium_v_num', 'medium_v_total_ratio', 'medium_static_ratio'], axis=1,inplace=True)
+train_data = pd.read_csv('trian_data_0303_1.csv', header = 0)
+train_data.drop(['last_time', 'y_y_mean_max', 'distance_max', 'close_x_ratio', 'close_y_ratio'], axis=1,inplace=True)
 ##########
 # 处理训练集
             
