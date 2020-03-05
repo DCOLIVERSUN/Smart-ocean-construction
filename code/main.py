@@ -227,17 +227,41 @@ test_data.drop(['ship'],axis=1,inplace=True)
 ##########
 # 配置 XGBClassifier 参数
 
-model = xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 6, 
+model = xgb.XGBClassifier(n_estimators = 130, learning_rate = 0.39, max_depth = 6, 
                           reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover',
-                          n_jobs = -1, seed = 10000)
+                          n_jobs = -1, seed = 0)
 ##########
+
+##########
+# 配置 CatBoost 参数
+# 0.9010588
+#model = cab.CatBoostClassifier(iterations=5000
+#                          ,learning_rate=0.39
+#                          ,depth=6
+#                          ,loss_function='MultiClass'
+#                          ,silent=True
+#                          ,class_weights=[4.4, 1.6, 4]
+#                          ,reg_lambda=9)
+#########
+
+#########
+# 配置 LightBGM 参数
+#model=lgb.LGBMClassifier(num_leaves=15
+#                       ,max_depth=8
+#                       ,learning_rate=0.39
+#                       ,n_estimators=1000
+#                       ,class_weight={0:4.4,1:1.6,2:4}
+#                       ,objective='multiclass'
+#                       ,n_jobs=-1
+#                       ,reg_alpha=0.004
+#                       ,reg_lambda=0.002)
 
 ##########
 # 20折交叉验证
 
 result = []
 scores = []
-fold = StratifiedKFold(n_splits = 20, shuffle = True)#, random_state = 380)
+fold = StratifiedKFold(n_splits = 20, shuffle = True, random_state = 380)
 for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
     x_train = train_data.iloc[train_idx]
     y_train = target.iloc[train_idx]
