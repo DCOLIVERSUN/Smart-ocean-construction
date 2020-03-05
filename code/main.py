@@ -120,51 +120,20 @@ def feature_engineer(df, flag=True):
         features.append(0)          # 中速率
     else:
         features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] != 0])) # 中速率
-#    features.append(len(df[df['v_stage'] == 2]))  # 中速
-#    features.append(len(df[df['v_stage'] == 2]) / len(df))
-#    if len(df[df['v_stage'] == 0]) == 0:
-#        features.append(0)
-#    else:
-#        features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] == 0]))
-    if len(df[df['v_stage'] == 1]) == 0:
-        features.append(0)
-    else:
-        features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] == 1]))
-    if len(df[df['v_stage'] == 3]) == 0:
-        features.append(0)
-    else:
-        features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] == 3]))
+
     
     features.append(len(df[df['lon_stage'] == 1]) / len(df)) # 低经度
     features.append(len(df[df['lon_stage'] == 2]) / len(df)) # 中经度
     
-    features.append(abs(sum(t_diff)) / 60)      # last_time
-#    features.append(df['x_x_mean'].max())       # x_x_mean_max
-#    features.append(df['x_x_mean'].min())
-#    features.append(df['x_x_mean'].mean())
-#    features.append(df['x_x_mean'].quantile(0.25))
-#    features.append(df['x_x_mean'].quantile(0.5))
-#    features.append(df['x_x_mean'].quantile(0.75))
-    
-    features.append(df['y_y_mean'].max())
-#    features.append(df['y_y_mean'].min())
-#    features.append(df['y_y_mean'].mean())
-#    features.append(df['y_y_mean'].quantile(0.25))
-#    features.append(df['y_y_mean'].quantile(0.5))
-#    features.append(df['y_y_mean'].quantile(0.75))
-    
-    features.append(df['distance'].max())
-#    features.append(df['distance'].min())
-#    features.append(df['distance'].mean())
-#    features.append(df['distance'].quantile(0.25))
-#    features.append(df['distance'].quantile(0.5))
-#    features.append(df['distance'].quantile(0.75))
-    
-#    if len(df[df['v_stage'] != 0]) == 0:
-#        features.append(0)          # 
-#    else:
-#        cnt = moving_straight(df)
-#        features.append(cnt / len(df[df['v_stage'] != 0])) # 直行率
+#    features.append(abs(sum(t_diff)) / 60)      # last_time
+#
+#    features.append(df['lon_lon_mean'].max())   # lon_lon_mean_max
+#    
+#    features.append(df['distance'].max())       # distance_max
+#    
+#    features.append(df['lat_lat_mean_stage'].sum() / len(df)) # close_lat_ratio
+#    features.append(df['lon_lon_mean_stage'].sum() / len(df)) # close_lon_ratio
+
     
 
     
