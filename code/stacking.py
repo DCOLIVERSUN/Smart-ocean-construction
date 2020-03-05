@@ -1,244 +1,228 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Mar  3 09:50:51 2020
-
-@author: oliver_sun
-"""
-
 
 import os
 import numpy as np
 import pandas as pd
-import xgboost as xgb
+from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import log_loss
+from sklearn.metrics import f1_score
+import xgboost as xgb
+from functools import reduce
+import warnings
 
+warnings.filterwarnings('ignore')
 
-#############
-# 读取数据
-feature_train = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-                 'y_min','y_max','y_mean','y_3/4',
-                 'xy_cov',
-                 'a',
-                 'v_mean','v_std','v_3/4',
-                 'd_mean', 'static_ratio', 'medium_v_ratio',
-                 'low_lon_ratio', 'medium_lon_ratio', 
-                 'type']
-feature_test = ['ship',
-                'x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-                'y_min','y_max','y_mean','y_3/4',
-                'xy_cov',
-                'a',
-                'v_mean','v_std','v_3/4',
-                'd_mean', 'static_ratio', 'medium_v_ratio',
-                'low_lon_ratio', 'medium_lon_ratio']
+###########
+# 预处理函数
 
-train_data = pd.read_csv('train_data.csv', header = 0)
-test_data = pd.read_csv('test_data.csv', header = 0)
+def preprocess(df):
+    df.drop_duplicates(['time'], keep = 'first')
+    df['time'] = pd.to_datetime(df['time'],format='%m%d %H:%M:%S')
+    df['minute'] = df['time'].dt.minute
+    df = del_dup(df)
+    df = del_v(df)
+    df = del_lon(df)
+    del df['minute']
+    return df
 
-train_data = train_data[feature_train]
-test_data = test_data[feature_test]
+# 处理重复数据
+def del_dup(df):
+    res = []
+    df['minute'] = pd.to_numeric(df['minute'])
+    for i in range(1, len(df)):
+        if (df['lat'].iloc[i] == df['lat'].iloc[i - 1] and df['lon'].iloc[i] == df['lon'].iloc[i - 1] and df['速度'].iloc[i] != 0.0):
+            df['速度'].iloc[i] = 0.0
+        if ((df['minute'].iloc[i] // 10) == (df['minute'].iloc[i-1] // 10)):
+            res.append(i)
+    df = df.drop(df.index[res])
+    return df
+
+# 处理速度
+def del_v(df):
+    df['v_stage'] = 0
+    for i in range(len(df)):
+        if df['速度'].iloc[i] == 0:
+            df['v_stage'].iloc[i] = 0
+        elif 0 < df['速度'].iloc[i] <= 2:
+            df['v_stage'].iloc[i] = 1
+        elif 2 < df['速度'].iloc[i] <= 6:
+            df['v_stage'].iloc[i] = 2
+        elif 6 < df['速度'].iloc[i]:
+            df['v_stage'].iloc[i] = 3
+    return df
+
+# 处理经度
+def del_lon(df):
+    df['lon_stage'] = 0
+    for i in range(len(df)):
+        if 116 <= df['lon'].iloc[i] < 119:
+            df['lon_stage'].iloc[i] = 1
+        elif 119 <= df['lon'].iloc[i] < 122:
+            df['lon_stage'].iloc[i] = 2
+        elif 122 <= df['lon'].iloc[i]:
+            df['lon_stage'].iloc[i] = 3
+    return df
+###########
+    
+###########
+# 特征提取
+    
+def feature_engineer(df, flag=True):
+    
+    df = preprocess(df)
+    
+    if flag == False:
+        features.append(df['渔船ID'].iloc[0])      # 渔船ID
+    features.append(df['lat'].min())              #x_min
+    features.append(df['lat'].max())              #x_max
+    features.append(df['lat'].mean())             #x_mean
+    features.append(df['lat'].quantile(0.25))     #x_1/4
+    features.append(df['lat'].quantile(0.5))      #x_1/2
+    
+    features.append(df['lon'].min())              #y_min
+    features.append(df['lon'].max())              #y_max
+    features.append(df['lon'].mean())             #y_mean
+    features.append(df['lon'].quantile(0.75))     #y_3/4
+    
+    features.append(df['lat'].cov(df['lon']))       #xy_cov
+    
+    df['time']=pd.to_datetime(df['time'],format='%Y%m%d %H:%M:%S')
+    t_diff=df['time'].diff().iloc[1:].dt.total_seconds()
+    
+    x_diff=df['lat'].diff().iloc[1:].abs()
+    y_diff=df['lat'].diff().iloc[1:].abs()
+    x_a = (x_diff/t_diff).mean()
+    y_a = (y_diff/t_diff).mean()
+    
+    features.append(np.sqrt(x_a ** 2 + y_a ** 2))   #a
+    
+    features.append(df['速度'].mean())           #v_mean
+    features.append(df['速度'].std())            #v_std
+    features.append(df['速度'].quantile(0.75))   #v_3/4
+         
+    features.append(df['方向'].mean())           #d_mean
+
+    features.append(len(df[df['v_stage'] == 0]) / len(df)) # 静止率
+    if len(df[df['v_stage'] != 0]) == 0:
+        features.append(0)          # 中速率
+    else:
+        features.append(len(df[df['v_stage'] == 2]) / len(df[df['v_stage'] != 0])) # 中速率
+    
+    features.append(len(df[df['lon_stage'] == 1]) / len(df)) # 低经度
+    features.append(len(df[df['lon_stage'] == 2]) / len(df)) # 中经度
+    
+    if(flag):
+        if df['type'].iloc[0] == '围网':
+            features.append(0)
+        elif df['type'].iloc[0] == '刺网':
+            features.append(1)
+        elif df['type'].iloc[0] == '拖网':
+            features.append(2)
+##########
+
+# TODO
+# 先用处理好的数据
+#data_path = r'./'
+train_data = pd.read_csv('trian_data_0303_1.csv', header = 0)
+train_data.drop(['last_time','y_y_mean_max', 'distance_max', 'close_x_ratio', 'close_y_ratio'], axis=1,inplace=True)
+##########
+# 处理训练集
+            
+features = []
+# TODO: 训练路径名后续需要改回
+#train_path = r'./tcdata/hy_round2_train_20200225'
+train_path = r'../data/hy_round2_train_20200225'
+# TODO: 后续需要取消注释
+#train_files = os.listdir(train_path)
+#train_files_len = len(train_files)
+#print("The len of train is " + str(train_files_len))
+#
+#for file in tqdm(train_files):
+#    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
+#    feature_engineer(df, flag=True)
+#
+#train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
+#train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
+#                     'y_min','y_max','y_mean','y_3/4',
+#                     'xy_cov',
+#                     'a',
+#                     'v_mean','v_std','v_3/4',
+#                     'd_mean', 'static_ratio', 'medium_v_ratio',
+#                     'low_lon_ratio', 'medium_lon_ratio', 
+#                     'type']
+## TODO：提交前删掉
+#train_data.to_csv('trian_data_0227_21.csv', index = None)
+##########
+
+##########
+# 处理测试集
+
+features = []
+# TODO: 测试路径名后续需要改回
+#test_path = r'./tcdata/hy_round2_testA_20200225'
+test_path = r'../data/hy_round2_testA_20200225'
+test_files = os.listdir(test_path)
+test_files_len = len(test_files)
+print("The len of test is " + str(test_files_len))
+
+for file in tqdm(test_files):
+    df = pd.read_csv(os.path.join(test_path, file), header=0, keep_default_na=False)
+    feature_engineer(df, flag=False)
+test_data = pd.DataFrame(np.array(features).reshape(test_files_len, int(len(features) / test_files_len)))
+test_data.columns = ['ship',
+                     'x_min','x_max','x_mean','x_1/4', 'x_1/2', 
+                     'y_min','y_max','y_mean','y_3/4',
+                     'xy_cov',
+                     'a',
+                     'v_mean','v_std','v_3/4',
+                     'd_mean', 'static_ratio', 'medium_v_ratio',
+                     'low_lon_ratio', 'medium_lon_ratio']
+##########
+
+##########
+# 分离特征与标签
 
 target = train_data.type
-train_data.drop(['type'], axis=1, inplace=True)
-test_data.drop(['ship'], axis=1,inplace=True)
-############
+train_data.drop(['type'],axis=1,inplace=True)
+res = test_data[['ship', 'a']]
+test_data.drop(['ship'],axis=1,inplace=True)
+##########
 
-############
-# 配置5个xgb模型
-params = []
-params.append({'objective': 'multi:softprob',
-               'num_round':150,
-               'eta':0.39,
-               'num_class':3,
-               'max_depth':6,
-               'alpha':0.004,
-               'lambda':0.002,
-               'seed':0})
-params.append({'objective': 'multi:softprob',
-               'num_round':150,
-               'eta':0.39,
-               'num_class':3,
-               'max_depth':6,
-               'alpha':0.004,
-               'lambda':0.002,
-               'seed':128})
-params.append({'objective': 'multi:softprob',
-               'num_round':150,
-               'eta':0.39,
-               'num_class':3,
-               'max_depth':6,
-               'alpha':0.004,
-               'lambda':0.002,
-               'seed':512})
-params.append({'objective': 'multi:softprob',
-               'num_round':150,
-               'eta':0.39,
-               'num_class':3,
-               'max_depth':6,
-               'alpha':0.004,
-               'lambda':0.002,
-               'seed':1024})
-params.append({'objective': 'multi:softprob',
-               'num_round':150,
-               'eta':0.39,
-               'num_class':3,
-               'max_depth':6,
-               'alpha':0.004,
-               'lambda':0.002,
-               'seed':2048})
+##########
+# 配置模型集合
 
-#clfs.append(xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 6, 
-#                          reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover',
-#                          n_jobs = -1, random_state = 0))
-##################
+clfs = [xgb.XGBClassifier(n_estimators = 130, learning_rate = 0.39, max_depth = 6, reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover', n_jobs = -1, random_state = 0),
+        xgb.XGBClassifier(n_estimators = 160, learning_rate = 0.39, max_depth = 6, reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover', n_jobs = -1, random_state = 0),
+        xgb.XGBClassifier(n_estimators = 200, learning_rate = 0.39, max_depth = 6, reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover', n_jobs = -1, random_state = 0),
+        xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 6, reg_alpha = 0.004, reg_lambda = 0.002, importance_type = 'total_cover', n_jobs = -1, random_state = 0)]
+##########
 
-##################
-# stacking
+##########
+# 配置 train_stackers, test_stackers
+
 train_stackers = []
-for RS in [0, 1, 2, 64, 128, 256, 380, 512, 1024, 2048, 4096]:
-    skf = StratifiedKFold(n_splits=20, random_state=RS, shuffle=True)
-    train_stacker = [[0.0 for s in range(3)] for k in range(0, (train_data.shape[0]))]
-    cv_scores = {i:[] for i in range(len(params))}
-    cv_scores['Avg'] = []
-    cnt = 0
-    print("Begin 20-flod cross validation")
-    for train_idx, val_idx in skf.split(train_data, target):
-        cnt += 1
-        X_train, y_train = train_data.iloc[train_idx], target.iloc[train_idx]
-        X_val, y_val = train_data.iloc[val_idx], target.iloc[val_idx]
-        preds = []
-        k = 0
-        for param in params:
-            xg_train = xgb.DMatrix(X_train, label=y_train)
-            clf = xgb.train(param, xg_train, param['num_round'])
-            y_val_pred = clf.predict(xgb.DMatrix(X_val))
-            loss = log_loss(y_val, y_val_pred)
-            preds.append(y_val_pred)
-            cv_scores[k].append(loss)
-            k += 1
-            print("Clf_{} iteration {}'s loss: {}".format(k, cnt, loss))
-        preds = np.array(preds)
-        avg_pred = np.mean(preds, axis=0)
-        avg_loss = log_loss(y_val, avg_pred)
-        cv_scores["Avg"].append(avg_loss)
-        print("Iteration {}'s Avg loss: {}".format(cnt, avg_loss))
-        no = 0
-        for real_idx in val_idx:
-            for i in range(3):
-                train_stacker[real_idx][i] = avg_pred[no][i]
-            no += 1
-    for i in range(len(params)):
-        print("clf_{} validation loss : {}".format(i, np.mean(cv_scores[i])))
-    print("Average validation loss : {}".format(np.mean(cv_scores["Avg"])))
-    train_stackers.append(train_stacker)
-train_stacker = np.mean(train_stackers, axis=0)
-print("*** Validation finished ***\n")
+test_stackers = []
+##########
 
-print("Begin predicting")
-test_stacker = [[0.0 for s in range(3)]   for k in range (0,(test_data.shape[0]))]
-preds = []
-for i in range(len(params)):
-    print("Clf_{} fiting".format(i))
-    xg = xgb.DMatrix(train_data, label=target)
-    clf = xgb.train(params[i], xg, params[i]['num_round'])
-    print("Clf_{} predicting".format(i))
-    pred = clf.predict(xgb.DMatrix(test_data))
-    preds.append(pred)
-preds = np.mean(preds, axis=0)
-for pr in range(0, len(preds)):
-    for d in range(0, 3):
-        test_stacker[pr][d] = preds[pr][d]
-    
-    
-    
-############
-#print("Stacking")
-#    train = train_data.copy()
-#    test = test_data.copy()
-#    y = train["interest_level"].apply(lambda x: target_num_map[x])
-#    del train["interest_level"]
-#    train_stackers = []
-#    for RS in [0, 1, 2, 64, 128, 256, 512, 1024, 2048, 4096]:
-#        skf = StratifiedKFold(n_splits=10, random_state=RS, shuffle=True)
-#        #Create Arrays for meta
-#        train_stacker = [[0.0 for s in range(3)]  for k in range (0,(train.shape[0]))]
-#        cv_scores = {i:[] for i in range(len(clfs))}
-#        cv_scores["Avg"] = []
-#        print("Begin 10-flod cross validation")
-#        cnt = 0
-#        for train_idx, val_idx in skf.split(train, y):
-#            cnt += 1
-#            X = train.copy()
-#            y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
-#            X_train, X_val, feats = coreProcess(X, y_train, train_idx, val_idx)
-#            X_train.toarray()
-#            preds = []
-#            k = 0
-#            for clf in clfs:
-#                clf.fit(X_train, y_train)
-#                y_val_pred = clf.predict_proba(X_val)
-#                loss = log_loss(y_val, y_val_pred)
-#                preds.append(y_val_pred)
-#                cv_scores[k].append(loss)
-#                k += 1
-#                print("Clf_{} iteration {}'s loss: {}".format(k, cnt, loss))
-#            preds = np.array(preds)
-#            avg_pred = np.mean(preds, axis=0)
-#            avg_loss = log_loss(y_val, avg_pred)
-#            cv_scores["Avg"].append(avg_loss)
-#            print("Iteration {}'s Avg loss: {}".format(cnt, avg_loss))
-#            no = 0
-#            for real_idx in val_idx:
-#                for i in range(3):
-#                    train_stacker[real_idx][i] = avg_pred[no][i]
-#                no += 1
-#        for i in range(len(clfs)):
-#            print("clf_{} validation loss : {}".format(i, np.mean(cv_scores[i])))
-#        print("Average validation loss : {}".format(np.mean(cv_scores["Avg"])))
-#        train_stackers.append(train_stacker)
-#    train_stacker = np.mean(train_stackers, axis=0)
-#    print("*** Validation finished ***\n")
-#
-#    test_stacker = [[0.0 for s in range(3)]   for k in range (0,(test.shape[0]))]
-#    train_idx = [i for i in range(train.shape[0])]
-#    test_idx = [i + train.shape[0] for i in range(test.shape[0])]
-#    data = pd.concat([train, test]).reset_index()
-#    X_train, X_test, feats = coreProcess(data, y, train_idx, test_idx)
-#    print(X_train.shape, len(train_stacker))
-#    print("Begin predicting")
-#    preds = []
-#    for i in range(len(clfs)):
-#        print("Clf_{} fiting".format(i))
-#        clfs[i].fit(X_train, y)
-#        print("Clf_{} predicting".format(i))
-#        pred = clfs[i].predict_proba(X_test)
-#        preds.append(pred)
-#    preds = np.mean(preds, axis=0)
-#    for pr in range (0, len(preds)):  
-#            for d in range (0,3):            
-#                test_stacker[pr][d]=(preds[pr][d])   
-#    print ("merging columns")   
-#    #stack xgboost predictions
-#    X_train = np.column_stack((X_train.toarray(),train_stacker))
-#    # stack id to test
-#    X_test = np.column_stack((X_test.toarray(),test_stacker))         
-#    # stack target to train
-#    X = np.column_stack((y,X_train))
-#    ids = test.listing_id.values
-#    X_test = np.column_stack((ids, X_test))
-#    np.savetxt("./train_stacknet.csv", X, delimiter=",", fmt='%.5f')
-#    np.savetxt("./test_stacknet.csv", X_test, delimiter=",", fmt='%.5f') 
-#    print("Write results...")
-#    output_file = "submission_{}.csv".format(np.mean(cv_scores["Avg"]))
-#    print("Writing submission to %s" % output_file)
-#    f = open(output_file, "w")   
-#    f.write("listing_id,high,medium,low\n")# the header   
-#    for g in range(0, len(test_stacker))  :
-#      f.write("%s" % (ids[g]))
-#      for prediction in test_stacker[g]:
-#         f.write(",%f" % (prediction))    
-#      f.write("\n")
-#    f.close()
-#    print("Done.")
+##########
+# 20 折交叉
+
+fold = StratifiedKFold(n_splits = 20, shuffle = True, random_state = 380)
+for j, clf in enumerate(clfs):
+    train_stacker = np.zeros((train_data.shape[0], 3))
+    test_stacker = np.zeros((test_data.shape[0], 3))
+    for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
+        x_train = train_data.iloc[train_idx]
+        y_train = target.iloc[train_idx]
+        x_test = train_data.iloc[test_idx]
+        y_test = target.iloc[test_idx]
+        clf.fit(x_train, y_train)
+        pred = clf.predict_proba(x_test)
+        train_stacker[test_idx] = pred
+        test_stacker += clf.predict_proba(test_data)
+    test_stacker = test_stacker / 20
+    train_stackers.append(train_stacker)
+    test_stackers.append(test_stacker)
+
+newfeature = reduce(lambda x,y:np.concatenate((x,y),axis=1),train_stackers)    
+newtestdata = reduce(lambda x,y:np.concatenate((x,y),axis=1),test_stackers)
