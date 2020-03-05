@@ -5,7 +5,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import f1_score
+#from sklearn.metrics import f1_score
+from sklearn.ensemble import RandomForestClassifier
+#from sklearn.model_selection import GridSearchCV
 import xgboost as xgb
 from functools import reduce
 import warnings
@@ -123,33 +125,33 @@ def feature_engineer(df, flag=True):
 # TODO
 # 先用处理好的数据
 #data_path = r'./'
-train_data = pd.read_csv('trian_data_0303_1.csv', header = 0)
-train_data.drop(['last_time','y_y_mean_max', 'distance_max', 'close_x_ratio', 'close_y_ratio'], axis=1,inplace=True)
+#train_data = pd.read_csv('trian_data_0303_1.csv', header = 0)
+#train_data.drop(['last_time','y_y_mean_max', 'distance_max', 'close_x_ratio', 'close_y_ratio'], axis=1,inplace=True)
 ##########
 # 处理训练集
             
 features = []
 # TODO: 训练路径名后续需要改回
-#train_path = r'./tcdata/hy_round2_train_20200225'
-train_path = r'../data/hy_round2_train_20200225'
+train_path = r'./tcdata/hy_round2_train_20200225'
+#train_path = r'../data/hy_round2_train_20200225'
 # TODO: 后续需要取消注释
-#train_files = os.listdir(train_path)
-#train_files_len = len(train_files)
-#print("The len of train is " + str(train_files_len))
-#
-#for file in tqdm(train_files):
-#    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
-#    feature_engineer(df, flag=True)
-#
-#train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
-#train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-#                     'y_min','y_max','y_mean','y_3/4',
-#                     'xy_cov',
-#                     'a',
-#                     'v_mean','v_std','v_3/4',
-#                     'd_mean', 'static_ratio', 'medium_v_ratio',
-#                     'low_lon_ratio', 'medium_lon_ratio', 
-#                     'type']
+train_files = os.listdir(train_path)
+train_files_len = len(train_files)
+print("The len of train is " + str(train_files_len))
+
+for file in tqdm(train_files):
+    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
+    feature_engineer(df, flag=True)
+
+train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
+train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
+                     'y_min','y_max','y_mean','y_3/4',
+                     'xy_cov',
+                     'a',
+                     'v_mean','v_std','v_3/4',
+                     'd_mean', 'static_ratio', 'medium_v_ratio',
+                     'low_lon_ratio', 'medium_lon_ratio', 
+                     'type']
 ## TODO：提交前删掉
 #train_data.to_csv('trian_data_0227_21.csv', index = None)
 ##########
@@ -159,8 +161,8 @@ train_path = r'../data/hy_round2_train_20200225'
 
 features = []
 # TODO: 测试路径名后续需要改回
-#test_path = r'./tcdata/hy_round2_testA_20200225'
-test_path = r'../data/hy_round2_testA_20200225'
+test_path = r'./tcdata/hy_round2_testA_20200225'
+#test_path = r'../data/hy_round2_testA_20200225'
 test_files = os.listdir(test_path)
 test_files_len = len(test_files)
 print("The len of test is " + str(test_files_len))
@@ -223,6 +225,25 @@ for j, clf in enumerate(clfs):
     test_stacker = test_stacker / 20
     train_stackers.append(train_stacker)
     test_stackers.append(test_stacker)
-
+##########
+  
+##########
+# 生成新特征
+    
 newfeature = reduce(lambda x,y:np.concatenate((x,y),axis=1),train_stackers)    
 newtestdata = reduce(lambda x,y:np.concatenate((x,y),axis=1),test_stackers)
+##########
+
+##########
+# 二级预测
+
+clf = RandomForestClassifier(n_estimators=1500, criterion='gini', verbose=0,random_state=2048,oob_score=True)
+clf.fit(newfeature, target)
+ans = clf.predict(newtestdata)
+res['type'] = ans
+res.type = res.type.map({0:'围网', 1:'刺网', 2:'拖网'})
+res.drop(['a'], axis=1, inplace=True)
+res.sort_values(by='ship', inplace=True)
+res.to_csv('result.csv', index = None, header = None, encoding = 'utf-8')
+
+print(res['type'].value_counts()/test_files_len)
