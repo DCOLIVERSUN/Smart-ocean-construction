@@ -174,20 +174,15 @@ train_path = r'../data/hy_round2_train_20200225'
 #                     'a',
 #                     'v_mean','v_std','v_3/4',
 #                     'd_mean',
-#                     'static_ratio', 'medium_v_ratio', 'medium_v_num', 'medium_v_total_ratio', 'medium_static_ratio', 'medium_low_ratio', 'medium_high_ratio',
+#                     'static_ratio', 'medium_v_ratio', 
 #                     'low_lon_ratio', 'medium_lon_ratio', 
 #                     'last_time',
-#                     #'x_x_mean_max', #'x_x_mean_min', 'x_x_mean_mean', 'x_x_mean_1/4', 'x_x_mean_1/2', 'x_x_mean_3/4',
-#                     'y_y_mean_max', #'y_y_mean_min', #'y_y_mean_mean', 
-#                     #'y_y_mean_1/4', #'y_y_mean_1/2', 
-#                     #'y_y_mean_3/4',
-#                     'distance_max', 
-#                     #'distance_min', 'distance_mean', #'distance_1/4', 'distance_1/2', 
-#                     #'distance_3/4',
-#                     #'straight_ratio',
+#                     'y_y_mean_max', 
+#                     'distance_max',
+#                     'close_x_ratio', 'close_y_ratio',
 #                     'type']
 ## TODO：提交前删掉
-#train_data.to_csv('trian_data_0302_1.csv', index = None)
+#train_data.to_csv('trian_data_0303_1.csv', index = None)
 ##########
 
 ##########
