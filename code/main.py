@@ -6,6 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import f1_score
+from sklearn.metrics import confusion_matrix
 import xgboost as xgb
 import warnings
 
@@ -124,8 +125,8 @@ def feature_engineer(df, flag=True):
 # TODO
 # 先用处理好的数据
 #data_path = r'./'
-#train_data = pd.read_csv('trian_data_0227_21.csv', header = 0)
-#train_data.drop(['x_3/4','high_lon_ratio'], axis=1,inplace=True)
+train_data = pd.read_csv('trian_data_0303_1.csv', header = 0)
+train_data.drop(['last_time','y_y_mean_max', 'distance_max', 'close_x_ratio', 'close_y_ratio'], axis=1,inplace=True)
 ##########
 # 处理训练集
             
@@ -134,23 +135,23 @@ features = []
 train_path = r'./tcdata/hy_round2_train_20200225'
 #train_path = r'../data/hy_round2_train_20200225'
 # TODO: 后续需要取消注释
-train_files = os.listdir(train_path)
-train_files_len = len(train_files)
-print("The len of train is " + str(train_files_len))
-
-for file in tqdm(train_files):
-    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
-    feature_engineer(df, flag=True)
-
-train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
-train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
-                     'y_min','y_max','y_mean','y_3/4',
-                     'xy_cov',
-                     'a',
-                     'v_mean','v_std','v_3/4',
-                     'd_mean', 'static_ratio', 'medium_v_ratio',
-                     'low_lon_ratio', 'medium_lon_ratio', 
-                     'type']
+#train_files = os.listdir(train_path)
+#train_files_len = len(train_files)
+#print("The len of train is " + str(train_files_len))
+#
+#for file in tqdm(train_files):
+#    df = pd.read_csv(os.path.join(train_path, file), header=0, keep_default_na=False)
+#    feature_engineer(df, flag=True)
+#
+#train_data = pd.DataFrame(np.array(features).reshape(train_files_len, int(len(features) / train_files_len)))
+#train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2', 
+#                     'y_min','y_max','y_mean','y_3/4',
+#                     'xy_cov',
+#                     'a',
+#                     'v_mean','v_std','v_3/4',
+#                     'd_mean', 'static_ratio', 'medium_v_ratio',
+#                     'low_lon_ratio', 'medium_lon_ratio', 
+#                     'type']
 ## TODO：提交前删掉
 #train_data.to_csv('trian_data_0227_21.csv', index = None)
 ##########
@@ -160,8 +161,8 @@ train_data.columns = ['x_min','x_max','x_mean','x_1/4', 'x_1/2',
 
 features = []
 # TODO: 测试路径名后续需要改回
-test_path = r'./tcdata/hy_round2_testA_20200225'
-#test_path = r'../data/hy_round2_testA_20200225'
+#test_path = r'./tcdata/hy_round2_testA_20200225'
+test_path = r'../data/hy_round2_testA_20200225'
 test_files = os.listdir(test_path)
 test_files_len = len(test_files)
 print("The len of test is " + str(test_files_len))
@@ -198,6 +199,39 @@ model = xgb.XGBClassifier(n_estimators = 150, learning_rate = 0.39, max_depth = 
 ##########
 
 ##########
+#
+##########
+#
+def F1_score(y_true, y_pred):
+    C=confusion_matrix(y_true, y_pred)
+    
+    TP_0 = C[0][0]
+    FN_0 = C[0][1] + C[0][2]
+    FP_0 = C[1][0] + C[2][0]
+    TN_0 = sum(sum(C)) - TP_0 - FN_0 - FP_0
+    precision_0 = TP_0/(TP_0 + FP_0)
+    recall_0 = TP_0/(TP_0 + FN_0)
+    F1_0 = 2 * precision_0 * recall_0/(precision_0 + recall_0)
+    
+    TP_1 = C[1][1]
+    FN_1 = C[1][0] + C[1][2]
+    FP_1 = C[0][1] + C[2][1]
+    TN_1 = sum(sum(C)) - TP_1 - FN_1 - FP_1
+    precision_1 = TP_1/(TP_1 + FP_1)
+    recall_1 = TP_1/(TP_1 + FN_1)
+    F1_1 = 2 * precision_1 * recall_1/(precision_1 + recall_1)
+    
+    TP_2 = C[2][2]
+    FN_2 = C[2][0] + C[2][1]
+    FP_2 = C[0][2] + C[1][2]
+    TN_2 = sum(sum(C)) - TP_2 - FN_2 - FP_2
+    precision_2 = TP_2/(TP_2 + FP_2)
+    recall_2 = TP_2/(TP_2 + FN_2)
+    F1_2 = 2 * precision_2 * recall_2/(precision_2 + recall_2)
+    return F1_0, F1_1, F1_2
+#########
+    
+##########
 # 20折交叉验证
 
 result = []
@@ -211,14 +245,14 @@ for index, (train_idx, test_idx) in enumerate(fold.split(train_data,target)):
     
     model.fit(x_train, y_train)
     pred = model.predict(x_test)
-    score = f1_score(y_test, pred, average='macro')
-    scores.append(score)
-    print(index, 'F1 Score: ', score)
+    F1_0_val, F1_1_val, F1_2_val = F1_score(y_test, pred)
+    score_ = (F1_0_val + F1_1_val + F1_2_val)/3
+    print('F1_0_val is:{}, F1_1_val is:{}, F1_2_val is:{}, total score is : {}'.format(F1_0_val, F1_1_val, F1_2_val, score_))
     
     prediction = model.predict_proba(test_data)
     result.append(np.argmax(prediction, axis=1))
     
-print('XGB mean F1 Score: ' + str(np.mean(scores)))
+#print('XGB mean F1 Score: ' + str(np.mean(scores)))
 ##########
 
 ##########
